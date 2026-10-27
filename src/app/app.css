@@ -1,0 +1,269 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+.header {
+  background-color: var(--verde-salvia);
+  color: var(--branco);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--sombra-suave);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-menu a {
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.nav-menu a:hover {
+  opacity: 0.8;
+}
+
+/* Botões */
+.btn-primary {
+  background-color: var(--rose);
+  color: var(--texto-escuro);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--rose-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--verde-salvia);
+  border: 2px solid var(--verde-salvia);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--verde-salvia);
+  color: var(--branco);
+}
+
+/* Hero Section */
+.hero {
+  background-color: #EFEBE4;
+  padding: 80px 0;
+  text-align: center;
+}
+
+.hero-text {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hero-text h2 {
+  font-size: 2.2rem;
+  color: var(--verde-salvia-escuro);
+  margin-bottom: 15px;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  color: var(--texto-escuro);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+/* Seções e Grids */
+.secao {
+  padding: 60px 0;
+}
+
+.secao-destaque {
+  background-color: #F3EEE7;
+}
+
+.secao-cabecalho {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.secao-cabecalho h2 {
+  font-size: 1.8rem;
+  color: var(--verde-salvia-escuro);
+  margin-bottom: 5px;
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+/* Cards */
+.card {
+  background-color: var(--branco);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--sombra-suave);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(44, 51, 43, 0.12);
+}
+
+.card-imagem {
+  position: relative;
+  height: 200px;
+}
+
+.card-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: var(--verde-salvia);
+  color: var(--branco);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-rose {
+  background-color: var(--rose);
+  color: var(--texto-escuro);
+}
+
+.card-conteudo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-conteudo h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.card-conteudo p {
+  font-size: 0.9rem;
+  color: #555;
+  flex-grow: 1;
+  margin-bottom: 15px;
+}
+
+.card-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #EFEBE4;
+  padding-top: 15px;
+}
+
+.preco {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--verde-salvia-escuro);
+}
+
+.btn-card {
+  background-color: var(--verde-salvia);
+  color: var(--branco);
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-card:hover {
+  background-color: var(--verde-salvia-escuro);
+}
+
+.btn-rose {
+  background-color: var(--rose);
+  color: var(--texto-escuro);
+}
+
+.btn-rose:hover {
+  background-color: var(--rose-hover);
+}
+
+/* Footer */
+.footer {
+  background-color: var(--verde-salvia-escuro);
+  color: var(--branco);
+  padding-top: 40px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 30px;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  padding: 15px 0;
+  font-size: 0.85rem;
+  color: #DDD;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .hero-text h2 {
+    font-size: 1.6rem;
+  }
+}
