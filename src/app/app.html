@@ -1,107 +1,17 @@
-<!-- Cabeçalho Principal -->
-<header class="header">
-  <div class="container header-container">
-    <div class="logo">
-      <span class="logo-icone">✨</span>
-      <h1>{{ titulo }}</h1>
+﻿<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" routerLink="/loja">Estética & Bem-Estar</a>
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link" routerLink="/loja">Loja</a>
+      <a class="nav-link" routerLink="/carrinho">Carrinho</a>
+      <a class="nav-link" routerLink="/admin/clientes">Clientes</a>
+      <a class="nav-link" routerLink="/admin/produtos">Produtos</a>
+      <a class="nav-link" routerLink="/admin/categorias">Categorias</a>
+      <a class="nav-link" routerLink="/admin/atendimentos">Pedidos</a>
     </div>
-    <nav class="nav-menu">
-      <a href="#servicos">Serviços</a>
-      <a href="#produtos">Produtos</a>
-      <a href="#sobre">Sobre Nós</a>
-      <button class="btn-primary">Área do Cliente</button>
-    </nav>
   </div>
-</header>
+</nav>
 
-<main>
-  <!-- Banner Principal -->
-  <section class="hero">
-    <div class="container hero-container">
-      <div class="hero-text">
-        <h2>Realce sua beleza natural com cuidados exclusivos</h2>
-        <p>Oferecemos tratamentos estéticos personalizados e produtos de alta qualidade para o seu bem-estar diário.</p>
-        <div class="hero-actions">
-          <a href="#servicos" class="btn-primary">Conhecer Serviços</a>
-          <a href="#produtos" class="btn-secondary">Ver Produtos</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Seção de Serviços -->
-  <section id="servicos" class="secao container">
-    <div class="secao-cabecalho">
-      <h2>Nossos Serviços</h2>
-      <p>Tratamentos realizados por profissionais qualificados</p>
-    </div>
-
-    <div class="grid-cards">
-      @for (servico of servicos; track servico.id) {
-        <div class="card">
-          <div class="card-imagem">
-            <img [src]="servico.imagem" [alt]="servico.nome">
-            <span class="badge">{{ servico.categoria }}</span>
-          </div>
-          <div class="card-conteudo">
-            <h3>{{ servico.nome }}</h3>
-            <p>{{ servico.descricao }}</p>
-            <div class="card-rodape">
-              <span class="preco">{{ servico.preco | currency:'BRL' }}</span>
-              <button class="btn-card">Agendar</button>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  </section>
-
-  <!-- Seção de Produtos -->
-  <section id="produtos" class="secao secao-destaque">
-    <div class="container">
-      <div class="secao-cabecalho">
-        <h2>Produtos em Destaque</h2>
-        <p>Cuidados profissionais para dar continuidade ao seu tratamento em casa</p>
-      </div>
-
-      <div class="grid-cards">
-        @for (produto of produtos; track produto.id) {
-          <div class="card">
-            <div class="card-imagem">
-              <img [src]="produto.imagem" [alt]="produto.nome">
-              <span class="badge badge-rose">{{ produto.categoria }}</span>
-            </div>
-            <div class="card-conteudo">
-              <h3>{{ produto.nome }}</h3>
-              <p>{{ produto.descricao }}</p>
-              <div class="card-rodape">
-                <span class="preco">{{ produto.preco | currency:'BRL' }}</span>
-                <button class="btn-card btn-rose">Comprar</button>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </section>
+<main class="container">
+  <router-outlet></router-outlet>
 </main>
-
-<!-- Rodapé -->
-<footer id="sobre" class="footer">
-  <div class="container footer-container">
-    <div>
-      <h3>{{ titulo }}</h3>
-      <p>Projeto Acadêmico - Tecnologia em Análise e Desenvolvimento de Sistemas.</p>
-    </div>
-    <div>
-      <h4>Contato</h4>
-      <p>contato&#64;esteticabemestar.com</p>
-      <p>(00) 99999-9999</p>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p>&copy; {{ titulo }}. Todos os direitos reservados.</p>
-  </div>
-</footer>
-
-<router-outlet></router-outlet>
