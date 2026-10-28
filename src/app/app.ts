@@ -1,12 +1,29 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  template: `
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand fw-bold" routerLink="/loja">Estética & Bem-Estar</a>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" routerLink="/loja">Loja</a>
+          <a class="nav-link" routerLink="/carrinho">Carrinho</a>
+          <a class="nav-link" routerLink="/admin/clientes">Clientes</a>
+          <a class="nav-link" routerLink="/admin/produtos">Produtos</a>
+          <a class="nav-link" routerLink="/admin/categorias">Categorias</a>
+          <a class="nav-link" routerLink="/admin/atendimentos">Pedidos</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <router-outlet></router-outlet>
+    </main>
+  `
 })
 export class AppComponent {
   title = 'estetica-bem-estar';
