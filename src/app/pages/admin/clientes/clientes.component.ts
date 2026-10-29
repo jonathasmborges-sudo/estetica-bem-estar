@@ -24,8 +24,16 @@ import { PessoaDTO } from '../../../models/pessoa.model';
               <input type="text" class="form-control" [(ngModel)]="clienteForm.nome" name="nome" required>
             </div>
             <div class="col-md-3">
-              <label class="form-label">CPF</label>
-              <input type="number" class="form-control" [(ngModel)]="clienteForm.cpf" name="cpf" required>
+              <label class="form-label">CPF (11 dígitos)</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="clienteForm.cpf" 
+                name="cpf" 
+                maxlength="11"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                placeholder="Apenas números"
+                required>
             </div>
             <div class="col-md-3">
               <label class="form-label">E-mail</label>
@@ -72,9 +80,14 @@ export class ClientesComponent implements OnInit {
   exibirFormulario = signal<boolean>(false);
   editandoId = signal<number | null>(null);
 
-  clienteForm: PessoaDTO = {
-    nome: '', cpf: 0, dataNascimento: '2000-01-01', sexo: 'M', email: '', telefone: 0, ativoPessoa: 'S',
-    enderecos: [{ cep: '00000000', numero: '0', complemento: '' }]
+  clienteForm: any = {
+    nome: '', 
+    cpf: '', 
+    dataNascimento: '2000-01-01', 
+    sexo: 'M', 
+    email: '', 
+    telefone: '00000000000', 
+    ativoPessoa: 'S'
   };
 
   ngOnInit(): void { this.carregar(); }
@@ -84,11 +97,20 @@ export class ClientesComponent implements OnInit {
   }
 
   novoCliente(): void {
+    this.clienteForm = {
+      nome: '', 
+      cpf: '', 
+      dataNascimento: '2000-01-01', 
+      sexo: 'M', 
+      email: '', 
+      telefone: '00000000000', 
+      ativoPessoa: 'S'
+    };
     this.editandoId.set(null);
     this.exibirFormulario.set(true);
   }
 
-  editar(c: PessoaDTO): void {
+  editar(c: any): void {
     this.clienteForm = JSON.parse(JSON.stringify(c));
     this.editandoId.set(c.idPessoa || null);
     this.exibirFormulario.set(true);
@@ -96,9 +118,15 @@ export class ClientesComponent implements OnInit {
 
   salvar(): void {
     if (this.editandoId()) {
-      this.pessoaService.update(this.editandoId()!, this.clienteForm).subscribe(() => { this.exibirFormulario.set(false); this.carregar(); });
+      this.pessoaService.update(this.editandoId()!, this.clienteForm).subscribe({
+        next: () => { this.exibirFormulario.set(false); this.carregar(); },
+        error: (err) => console.error('Erro ao atualizar:', err)
+      });
     } else {
-      this.pessoaService.create(this.clienteForm).subscribe(() => { this.exibirFormulario.set(false); this.carregar(); });
+      this.pessoaService.create(this.clienteForm).subscribe({
+        next: () => { this.exibirFormulario.set(false); this.carregar(); },
+        error: (err) => console.error('Erro ao criar:', err)
+      });
     }
   }
 
