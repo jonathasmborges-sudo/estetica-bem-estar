@@ -7,8 +7,7 @@ import { PessoaDTO } from '../models/pessoa.model';
 @Injectable({ providedIn: 'root' })
 export class PessoaService {
   private http = inject(HttpClient);
-  // Endpoint corrigido de /PessoaEndereco para /Pessoa
-  private apiUrl = `${environment.apiUrl}/Pessoa`;
+  private apiUrl = `${environment.apiUrl}/PessoaEndereco`;
 
   getAll(): Observable<PessoaDTO[]> {
     return this.http.get<PessoaDTO[]>(this.apiUrl);
