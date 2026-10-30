@@ -90,7 +90,8 @@ export class CarrinhoComponent implements OnInit {
 
   ngOnInit(): void {
     this.pessoaService.getAll().subscribe({
-      next: (res) => this.clientes.set(res.filter(p => p.ativoPessoa === 'S'))
+      next: (res) => this.clientes.set(res.filter(p => p.ativoPessoa === 'S')),
+      error: (err) => console.error('Erro ao carregar clientes:', err)
     });
   }
 
@@ -103,7 +104,15 @@ export class CarrinhoComponent implements OnInit {
   }
 
   confirmarCompra(): void {
-    if (this.idPessoaSelecionada <= 0) return alert('Selecione um cliente!');
+    if (this.carrinhoService.itens().length === 0) {
+      alert('Seu carrinho está vazio!');
+      return;
+    }
+    if (this.idPessoaSelecionada <= 0) {
+      alert('Selecione um cliente!');
+      return;
+    }
+
     this.processando.set(true);
 
     const hoje = new Date().toISOString().split('T')[0];
@@ -120,13 +129,15 @@ export class CarrinhoComponent implements OnInit {
     };
 
     this.atendimentoService.createAtendimento(pedido).subscribe({
-      next: (res) => {
-        alert(`Pedido #${res.idAtendimento} realizado com sucesso!`);
+      next: (res: any) => {
+        const id = res?.idAtendimento || res?.id || 'confirmado';
+        alert(`Pedido #${id} realizado com sucesso!`);
         this.carrinhoService.limpar();
         this.processando.set(false);
       },
-      error: () => {
-        alert('Erro ao registrar pedido.');
+      error: (err) => {
+        console.error('Erro ao registrar pedido:', err);
+        alert('Erro ao registrar pedido. Verifique se o backend está em execução.');
         this.processando.set(false);
       }
     });
