@@ -10,21 +10,36 @@ export interface ItemCarrinho {
 
 @Injectable({ providedIn: 'root' })
 export class CarrinhoService {
-  private itensSignal = signal<ItemCarrinho[]>([]);
+  private readonly key = 'carrinho_loja';
+
+  private itensSignal = signal<ItemCarrinho[]>(this.carregarInicial());
 
   itens = computed(() => this.itensSignal());
   totalItens = computed(() => this.itensSignal().reduce((acc, item) => acc + item.quantidade, 0));
   valorTotal = computed(() => this.itensSignal().reduce((acc, item) => acc + (item.precoUnitario * item.quantidade), 0));
+
+  private carregarInicial(): ItemCarrinho[] {
+    const dados = localStorage.getItem(this.key);
+    return dados ? JSON.parse(dados) : [];
+  }
+
+  private salvar(novosItens: ItemCarrinho[]): void {
+    this.itensSignal.set(novosItens);
+    localStorage.setItem(this.key, JSON.stringify(novosItens));
+  }
 
   adicionarItem(item: ItemCarrinho): void {
     const atuais = this.itensSignal();
     const index = atuais.findIndex(i => i.idItem === item.idItem);
     if (index > -1) {
       const novos = [...atuais];
-      novos[index].quantidade += item.quantidade;
-      this.itensSignal.set(novos);
+      novos[index] = {
+        ...novos[index],
+        quantidade: novos[index].quantidade + item.quantidade
+      };
+      this.salvar(novos);
     } else {
-      this.itensSignal.set([...atuais, item]);
+      this.salvar([...atuais, item]);
     }
   }
 
@@ -34,14 +49,15 @@ export class CarrinhoService {
       return;
     }
     const novos = this.itensSignal().map(i => i.idItem === idItem ? { ...i, quantidade } : i);
-    this.itensSignal.set(novos);
+    this.salvar(novos);
   }
 
   removerItem(idItem: number): void {
-    this.itensSignal.set(this.itensSignal().filter(i => i.idItem !== idItem));
+    this.salvar(this.itensSignal().filter(i => i.idItem !== idItem));
   }
 
   limpar(): void {
+    localStorage.removeItem(this.key);
     this.itensSignal.set([]);
   }
 }
