@@ -53,7 +53,7 @@ import { Categorium } from '../../../models/categoria.model';
             </div>
             <div class="col-md-2">
               <label class="form-label">Situação</label>
-              <select class="form-select" [(ngModel)]="formItem.ativoItem" name="ativoItem">
+              <select class="form-select" [(ngModel)]="formItem.ativoProdutoServico" name="ativoProdutoServico">
                 <option value="S">Ativo</option>
                 <option value="N">Inativo</option>
               </select>
@@ -92,8 +92,8 @@ import { Categorium } from '../../../models/categoria.model';
             <td>R$ {{ p.precoVenda | number:'1.2-2' }}</td>
             <td>{{ p.unidade || 'UN' }}</td>
             <td>
-              <span class="badge" [ngClass]="p.iditemNavigation?.ativoItem === 'N' ? 'bg-secondary' : 'bg-primary'">
-                {{ p.iditemNavigation?.ativoItem === 'N' ? 'Inativo' : 'Ativo' }}
+              <span class="badge" [ngClass]="p.iditemNavigation?.ativoProdutoServico === 'N' ? 'bg-secondary' : 'bg-primary'">
+                {{ p.iditemNavigation?.ativoProdutoServico === 'N' ? 'Inativo' : 'Ativo' }}
               </span>
             </td>
             <td>
@@ -120,7 +120,7 @@ export class ProdutosComponent implements OnInit {
     descricaoItem: '',
     idcategoria: 0,
     tipoItem: 'P',
-    ativoItem: 'S',
+    ativoProdutoServico: 'S',
     precoVenda: 0,
     unidade: 'UN'
   };
@@ -140,7 +140,7 @@ export class ProdutosComponent implements OnInit {
   }
 
   novoItem(): void {
-    this.formItem = { item1: '', descricaoItem: '', idcategoria: 0, tipoItem: 'P', ativoItem: 'S', precoVenda: 0, unidade: 'UN' };
+    this.formItem = { item1: '', descricaoItem: '', idcategoria: 0, tipoItem: 'P', ativoProdutoServico: 'S', precoVenda: 0, unidade: 'UN' };
     this.editandoId.set(null);
     this.exibirFormulario.set(true);
   }
@@ -151,7 +151,7 @@ export class ProdutosComponent implements OnInit {
       descricaoItem: p.iditemNavigation?.descricaoItem || '',
       idcategoria: p.iditemNavigation?.idcategoria || 0,
       tipoItem: p.iditemNavigation?.tipoItem || 'P',
-      ativoItem: p.iditemNavigation?.ativoItem || 'S',
+      ativoProdutoServico: p.iditemNavigation?.ativoProdutoServico || 'S',
       precoVenda: p.precoVenda,
       unidade: p.unidade || 'UN'
     };
