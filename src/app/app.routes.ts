@@ -3,6 +3,7 @@
 export const routes: Routes = [
   { path: '', redirectTo: 'loja', pathMatch: 'full' },
   { path: 'loja', loadComponent: () => import('./pages/loja/loja.component').then(m => m.LojaComponent) },
+  { path: 'loja/meus-pedidos', loadComponent: () => import('./pages/loja/meus-pedidos/meus-pedidos').then(m => m.MeusPedidos) },
   { path: 'carrinho', loadComponent: () => import('./pages/carrinho/carrinho.component').then(m => m.CarrinhoComponent) },
   { path: 'admin/dashboard', loadComponent: () => import('./pages/admin/dashboard/dashboard').then(m => m.Dashboard) },
   { path: 'admin/clientes', loadComponent: () => import('./pages/admin/clientes/clientes.component').then(m => m.ClientesComponent) },
