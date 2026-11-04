@@ -152,7 +152,7 @@ export class ProdutosComponent implements OnInit {
       idcategoria: p.iditemNavigation?.idcategoria || 0,
       tipoItem: p.iditemNavigation?.tipoItem || 'P',
       ativoProdutoServico: p.iditemNavigation?.ativoProdutoServico || 'S',
-      precoVenda: p.precoVenda,
+      precoVenda: p.precoVenda || 0,
       unidade: p.unidade || 'UN'
     };
     this.editandoId.set(p.iditem);
@@ -169,6 +169,31 @@ export class ProdutosComponent implements OnInit {
       return;
     }
 
+    const proximoId = this.produtos().length > 0 
+      ? Math.max(...this.produtos().map(p => p.iditem)) + 1 
+      : 1;
+
+    const idFinal = this.editandoId() ? this.editandoId()! : proximoId;
+    const precoNum = Number(this.formItem.precoVenda);
+
+    const payload = {
+      iditem: idFinal,
+      item1: this.formItem.item1,
+      descricaoItem: this.formItem.descricaoItem || '',
+      idcategoria: Number(this.formItem.idcategoria),
+      tipoItem: this.formItem.tipoItem,
+      ativoProdutoServico: this.formItem.ativoProdutoServico,
+      preco: precoNum,
+      precoVenda: precoNum,
+      precoCusto: 0,
+      custo: 0,
+      unidade: this.formItem.unidade || 'UN',
+      qtdEstoque: 0,
+      quantidadeEstoque: 0,
+      estoque: 0,
+      quantidade: 0
+    };
+
     const acaoConcluida = () => {
       this.exibirFormulario.set(false);
       this.carregar();
@@ -178,34 +203,17 @@ export class ProdutosComponent implements OnInit {
       if (err?.status >= 200 && err?.status < 300) {
         acaoConcluida();
       } else {
-        alert('Erro ao salvar item: ' + (err?.error?.title || err?.message || 'Erro no servidor'));
+        alert('Erro ao salvar item: ' + (err?.error?.erro || err?.error?.mensagem || err?.message || 'Erro de servidor'));
       }
     };
 
     if (this.editandoId()) {
-      const payload = {
-        iditem: this.editandoId()!,
-        ...this.formItem,
-        idcategoria: Number(this.formItem.idcategoria),
-        precoVenda: Number(this.formItem.precoVenda)
-      };
-      this.produtoService.updateProduto(this.editandoId()!, payload).subscribe({
+      this.produtoService.updateProduto(this.editandoId()!, payload as any).subscribe({
         next: acaoConcluida,
         error: tratarErro
       });
     } else {
-      const proximoId = this.produtos().length > 0 
-        ? Math.max(...this.produtos().map(p => p.iditem)) + 1 
-        : 1;
-
-      const payload = {
-        iditem: proximoId,
-        ...this.formItem,
-        idcategoria: Number(this.formItem.idcategoria),
-        precoVenda: Number(this.formItem.precoVenda)
-      };
-
-      this.produtoService.createProduto(payload).subscribe({
+      this.produtoService.createProduto(payload as any).subscribe({
         next: acaoConcluida,
         error: tratarErro
       });
@@ -220,7 +228,7 @@ export class ProdutosComponent implements OnInit {
           if (err?.status >= 200 && err?.status < 300) {
             this.carregar();
           } else {
-            alert('Erro ao excluir item: ' + (err?.error?.title || err?.message));
+            alert('Erro ao excluir item: ' + (err?.error?.erro || err?.message));
           }
         }
       });
