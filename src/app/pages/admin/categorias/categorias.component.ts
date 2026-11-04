@@ -87,23 +87,34 @@ export class CategoriasComponent implements OnInit {
       return;
     }
 
+    const acaoConcluida = () => {
+      this.exibirFormulario.set(false);
+      this.carregar();
+    };
+
+    const tratarErro = (err: any) => {
+      if (err?.status >= 200 && err?.status < 300) {
+        acaoConcluida();
+      } else {
+        alert('Erro ao salvar categoria: ' + (err?.error?.title || err?.message || 'Erro no servidor'));
+      }
+    };
+
     if (this.editandoId()) {
       const payload: Categorium = { idcategoria: this.editandoId()!, categoria: this.nomeCategoria };
       this.categoriaService.updateCategoria(this.editandoId()!, payload).subscribe({
-        next: () => {
-          this.exibirFormulario.set(false);
-          this.carregar();
-        },
-        error: (err) => alert('Erro ao atualizar categoria: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+        next: acaoConcluida,
+        error: tratarErro
       });
     } else {
-      const payload: any = { categoria: this.nomeCategoria };
-      this.categoriaService.createCategoria(payload).subscribe({
-        next: () => {
-          this.exibirFormulario.set(false);
-          this.carregar();
-        },
-        error: (err) => alert('Erro ao cadastrar categoria: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+      const proximoId = this.categorias().length > 0 
+        ? Math.max(...this.categorias().map(c => c.idcategoria)) + 1 
+        : 1;
+
+      const payload = { idcategoria: proximoId, categoria: this.nomeCategoria };
+      this.categoriaService.createCategoria(payload as any).subscribe({
+        next: acaoConcluida,
+        error: tratarErro
       });
     }
   }
@@ -112,7 +123,13 @@ export class CategoriasComponent implements OnInit {
     if (confirm('Deseja excluir esta categoria?')) {
       this.categoriaService.deleteCategoria(id).subscribe({
         next: () => this.carregar(),
-        error: () => alert('Não é possível excluir categorias com produtos vinculados.')
+        error: (err) => {
+          if (err?.status >= 200 && err?.status < 300) {
+            this.carregar();
+          } else {
+            alert('Não é possível excluir categorias com produtos vinculados.');
+          }
+        }
       });
     }
   }

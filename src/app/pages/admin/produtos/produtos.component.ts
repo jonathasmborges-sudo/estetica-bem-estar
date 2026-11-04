@@ -169,27 +169,45 @@ export class ProdutosComponent implements OnInit {
       return;
     }
 
-    const payload = {
-      ...this.formItem,
-      idcategoria: Number(this.formItem.idcategoria),
-      precoVenda: Number(this.formItem.precoVenda)
+    const acaoConcluida = () => {
+      this.exibirFormulario.set(false);
+      this.carregar();
+    };
+
+    const tratarErro = (err: any) => {
+      if (err?.status >= 200 && err?.status < 300) {
+        acaoConcluida();
+      } else {
+        alert('Erro ao salvar item: ' + (err?.error?.title || err?.message || 'Erro no servidor'));
+      }
     };
 
     if (this.editandoId()) {
+      const payload = {
+        iditem: this.editandoId()!,
+        ...this.formItem,
+        idcategoria: Number(this.formItem.idcategoria),
+        precoVenda: Number(this.formItem.precoVenda)
+      };
       this.produtoService.updateProduto(this.editandoId()!, payload).subscribe({
-        next: () => {
-          this.exibirFormulario.set(false);
-          this.carregar();
-        },
-        error: (err) => alert('Erro ao atualizar item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+        next: acaoConcluida,
+        error: tratarErro
       });
     } else {
+      const proximoId = this.produtos().length > 0 
+        ? Math.max(...this.produtos().map(p => p.iditem)) + 1 
+        : 1;
+
+      const payload = {
+        iditem: proximoId,
+        ...this.formItem,
+        idcategoria: Number(this.formItem.idcategoria),
+        precoVenda: Number(this.formItem.precoVenda)
+      };
+
       this.produtoService.createProduto(payload).subscribe({
-        next: () => {
-          this.exibirFormulario.set(false);
-          this.carregar();
-        },
-        error: (err) => alert('Erro ao cadastrar item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+        next: acaoConcluida,
+        error: tratarErro
       });
     }
   }
@@ -198,7 +216,13 @@ export class ProdutosComponent implements OnInit {
     if (confirm('Deseja excluir ou desativar este item?')) {
       this.produtoService.deleteProduto(id).subscribe({
         next: () => this.carregar(),
-        error: (err) => alert('Erro ao excluir item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+        error: (err) => {
+          if (err?.status >= 200 && err?.status < 300) {
+            this.carregar();
+          } else {
+            alert('Erro ao excluir item: ' + (err?.error?.title || err?.message));
+          }
+        }
       });
     }
   }
