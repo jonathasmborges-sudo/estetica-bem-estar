@@ -135,7 +135,7 @@ export class ProdutosComponent implements OnInit {
   }
 
   obterNomeCategoria(idcat?: number): string {
-    const cat = this.categorias().find(c => c.idcategoria === idcat);
+    const cat = this.categorias().find(c => c.idcategoria === Number(idcat));
     return cat ? cat.categoria : '-';
   }
 
@@ -160,20 +160,46 @@ export class ProdutosComponent implements OnInit {
   }
 
   salvar(): void {
+    if (!this.formItem.item1.trim()) {
+      alert('Informe o nome do item!');
+      return;
+    }
+    if (Number(this.formItem.idcategoria) <= 0) {
+      alert('Selecione uma categoria válida!');
+      return;
+    }
+
+    const payload = {
+      ...this.formItem,
+      idcategoria: Number(this.formItem.idcategoria),
+      precoVenda: Number(this.formItem.precoVenda)
+    };
+
     if (this.editandoId()) {
-      this.produtoService.updateProduto(this.editandoId()!, this.formItem).subscribe({
-        next: () => { this.exibirFormulario.set(false); this.carregar(); }
+      this.produtoService.updateProduto(this.editandoId()!, payload).subscribe({
+        next: () => {
+          this.exibirFormulario.set(false);
+          this.carregar();
+        },
+        error: (err) => alert('Erro ao atualizar item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
       });
     } else {
-      this.produtoService.createProduto(this.formItem).subscribe({
-        next: () => { this.exibirFormulario.set(false); this.carregar(); }
+      this.produtoService.createProduto(payload).subscribe({
+        next: () => {
+          this.exibirFormulario.set(false);
+          this.carregar();
+        },
+        error: (err) => alert('Erro ao cadastrar item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
       });
     }
   }
 
   excluir(id: number): void {
     if (confirm('Deseja excluir ou desativar este item?')) {
-      this.produtoService.deleteProduto(id).subscribe(() => this.carregar());
+      this.produtoService.deleteProduto(id).subscribe({
+        next: () => this.carregar(),
+        error: (err) => alert('Erro ao excluir item: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
+      });
     }
   }
 }
