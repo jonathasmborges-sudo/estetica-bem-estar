@@ -82,14 +82,28 @@ export class CategoriasComponent implements OnInit {
   }
 
   salvar(): void {
-    const payload: Categorium = { idcategoria: this.editandoId() || 0, categoria: this.nomeCategoria };
+    if (!this.nomeCategoria.trim()) {
+      alert('Informe o nome da categoria!');
+      return;
+    }
+
     if (this.editandoId()) {
+      const payload: Categorium = { idcategoria: this.editandoId()!, categoria: this.nomeCategoria };
       this.categoriaService.updateCategoria(this.editandoId()!, payload).subscribe({
-        next: () => { this.exibirFormulario.set(false); this.carregar(); }
+        next: () => {
+          this.exibirFormulario.set(false);
+          this.carregar();
+        },
+        error: (err) => alert('Erro ao atualizar categoria: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
       });
     } else {
+      const payload: any = { categoria: this.nomeCategoria };
       this.categoriaService.createCategoria(payload).subscribe({
-        next: () => { this.exibirFormulario.set(false); this.carregar(); }
+        next: () => {
+          this.exibirFormulario.set(false);
+          this.carregar();
+        },
+        error: (err) => alert('Erro ao cadastrar categoria: ' + (err?.error?.title || err?.statusText || 'Erro na requisição'))
       });
     }
   }
