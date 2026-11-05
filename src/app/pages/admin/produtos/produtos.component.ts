@@ -135,6 +135,7 @@ export class ProdutosComponent implements OnInit {
   }
 
   obterNomeCategoria(idcat?: number): string {
+    if (!idcat) return '-';
     const cat = this.categorias().find(c => c.idcategoria === Number(idcat));
     return cat ? cat.categoria : '-';
   }
@@ -169,25 +170,19 @@ export class ProdutosComponent implements OnInit {
       return;
     }
 
-    const proximoId = this.produtos().length > 0 
-      ? Math.max(...this.produtos().map(p => p.iditem)) + 1 
-      : 1;
+    const precoValor = Number(this.formItem.precoVenda);
 
-    const idFinal = this.editandoId() ? this.editandoId()! : proximoId;
-    const precoNum = Number(this.formItem.precoVenda);
-
+    // Payload estruturado exatamente de acordo com o ProdutoDTO esperado pelo ProdutoItemController
     const payload = {
-      iditem: idFinal,
-      precoVenda: precoNum,
-      unidade: this.formItem.unidade || 'UN',
-      iditemNavigation: {
-        iditem: idFinal,
-        item1: this.formItem.item1,
-        descricaoItem: this.formItem.descricaoItem || '',
-        idcategoria: Number(this.formItem.idcategoria),
-        tipoItem: this.formItem.tipoItem,
-        ativoProdutoServico: this.formItem.ativoProdutoServico
-      }
+      idCategoria: Number(this.formItem.idcategoria),
+      item: this.formItem.item1,
+      descricaoItem: this.formItem.descricaoItem || '',
+      preco: precoValor,
+      tipoItem: this.formItem.tipoItem || 'P',
+      ativoProdutoServico: this.formItem.ativoProdutoServico || 'S',
+      codigoPreco: 0,
+      precoVenda: precoValor,
+      unidade: this.formItem.unidade || 'UN'
     };
 
     const acaoConcluida = () => {
@@ -217,7 +212,7 @@ export class ProdutosComponent implements OnInit {
   }
 
   excluir(id: number): void {
-    if (confirm('Deseja excluir ou desativar este item?')) {
+    if (confirm('Deseja excluir este item?')) {
       this.produtoService.deleteProduto(id).subscribe({
         next: () => this.carregar(),
         error: (err) => {
