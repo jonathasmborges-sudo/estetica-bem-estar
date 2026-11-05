@@ -178,20 +178,16 @@ export class ProdutosComponent implements OnInit {
 
     const payload = {
       iditem: idFinal,
-      item1: this.formItem.item1,
-      descricaoItem: this.formItem.descricaoItem || '',
-      idcategoria: Number(this.formItem.idcategoria),
-      tipoItem: this.formItem.tipoItem,
-      ativoProdutoServico: this.formItem.ativoProdutoServico,
-      preco: precoNum,
       precoVenda: precoNum,
-      precoCusto: 0,
-      custo: 0,
       unidade: this.formItem.unidade || 'UN',
-      qtdEstoque: 0,
-      quantidadeEstoque: 0,
-      estoque: 0,
-      quantidade: 0
+      iditemNavigation: {
+        iditem: idFinal,
+        item1: this.formItem.item1,
+        descricaoItem: this.formItem.descricaoItem || '',
+        idcategoria: Number(this.formItem.idcategoria),
+        tipoItem: this.formItem.tipoItem,
+        ativoProdutoServico: this.formItem.ativoProdutoServico
+      }
     };
 
     const acaoConcluida = () => {
@@ -203,7 +199,7 @@ export class ProdutosComponent implements OnInit {
       if (err?.status >= 200 && err?.status < 300) {
         acaoConcluida();
       } else {
-        alert('Erro ao salvar item: ' + (err?.error?.erro || err?.error?.mensagem || err?.message || 'Erro de servidor'));
+        alert('Erro ao salvar item: ' + (err?.error?.erro || err?.error?.mensagem || err?.message || 'Erro no servidor'));
       }
     };
 
