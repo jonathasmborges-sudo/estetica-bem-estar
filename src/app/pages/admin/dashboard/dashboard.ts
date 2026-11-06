@@ -1,10 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { PessoaService } from '../../../services/pessoa.service';
 import { ProdutoService } from '../../../services/produto.service';
-import { AtendimentoService } from '../../../services/atendimento.service';
-import { EstoqueService } from '../../../services/estoque';
+import { CategoriaService } from '../../../services/categoria.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,108 +10,140 @@ import { EstoqueService } from '../../../services/estoque';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="container my-4">
-      <h2 class="mb-4">Painel de Controle Administrativo (Dashboard)</h2>
+      <h2 class="mb-4">Painel Administrativo (Dashboard)</h2>
 
       <div class="row g-4 mb-4">
+        <!-- Card Produtos -->
         <div class="col-md-3">
-          <div class="card bg-primary text-white shadow-sm p-3">
-            <h5>Total Clientes</h5>
-            <h2 class="fw-bold">{{ totalClientes() }}</h2>
-            <a routerLink="/admin/clientes" class="text-white text-decoration-underline fs-6">Gerenciar Clientes &rarr;</a>
+          <div class="card text-white bg-primary shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">Produtos</h5>
+              <h2 class="display-5 fw-bold">{{ totalProdutos() }}</h2>
+              <p class="card-text">Itens cadastrados do tipo Produto</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <a routerLink="/admin/produtos" class="text-white text-decoration-none">Gerenciar Produtos &rarr;</a>
+            </div>
           </div>
         </div>
 
+        <!-- Card Serviços -->
         <div class="col-md-3">
-          <div class="card bg-success text-white shadow-sm p-3">
-            <h5>Produtos & Serviços</h5>
-            <h2 class="fw-bold">{{ totalProdutos() }}</h2>
-            <a routerLink="/admin/produtos" class="text-white text-decoration-underline fs-6">Ver Catálogo &rarr;</a>
+          <div class="card text-white bg-success shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">Serviços</h5>
+              <h2 class="display-5 fw-bold">{{ totalServicos() }}</h2>
+              <p class="card-text">Itens cadastrados do tipo Serviço</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <a routerLink="/admin/produtos" class="text-white text-decoration-none">Gerenciar Serviços &rarr;</a>
+            </div>
           </div>
         </div>
 
+        <!-- Card Categorias -->
         <div class="col-md-3">
-          <div class="card bg-warning text-dark shadow-sm p-3">
-            <h5>Pedidos Registrados</h5>
-            <h2 class="fw-bold">{{ totalPedidos() }}</h2>
-            <a routerLink="/admin/atendimentos" class="text-dark text-decoration-underline fs-6">Ver Atendimentos &rarr;</a>
+          <div class="card text-white bg-warning shadow-sm h-100">
+            <div class="card-body text-dark">
+              <h5 class="card-title">Categorias</h5>
+              <h2 class="display-5 fw-bold">{{ totalCategorias() }}</h2>
+              <p class="card-text">Categorias ativas registradas</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <a routerLink="/admin/categorias" class="text-dark fw-bold text-decoration-none">Gerenciar Categorias &rarr;</a>
+            </div>
           </div>
         </div>
 
+        <!-- Card Total de Itens -->
         <div class="col-md-3">
-          <div class="card bg-info text-white shadow-sm p-3">
-            <h5>Itens em Estoque</h5>
-            <h2 class="fw-bold">{{ totalEstoque() }}</h2>
-            <a routerLink="/admin/estoque" class="text-white text-decoration-underline fs-6">Gerenciar Estoque &rarr;</a>
+          <div class="card text-white bg-info shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">Total no Catálogo</h5>
+              <h2 class="display-5 fw-bold">{{ totalGeral() }}</h2>
+              <p class="card-text">Produtos e Serviços no sistema</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <a routerLink="/loja" class="text-white text-decoration-none">Ver Loja Virtual &rarr;</a>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card shadow-sm p-4">
-            <h4>Ações Rápidas - Módulo 2</h4>
-            <p class="text-muted">Acesse as principais telas do Painel Administrativo:</p>
-            <div class="d-grid gap-2">
-              <a routerLink="/admin/atendimentos" class="btn btn-outline-primary text-start">📦 Gestão de Pedidos & Atendimentos</a>
-              <a routerLink="/admin/estoque" class="btn btn-outline-success text-start">📥 Entrada de Estoque & Mercadorias</a>
-              <a routerLink="/admin/clientes" class="btn btn-outline-dark text-start">👤 Cadastro Geral de Clientes</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card shadow-sm p-4">
-            <h4>Visão da Loja Virtual</h4>
-            <p class="text-muted">Navegue até a interface do cliente para testar novos pedidos:</p>
-            <div class="d-grid gap-2">
-              <a routerLink="/loja" class="btn btn-primary text-start">🛒 Abrir Catálogo da Loja Virtual</a>
-              <a routerLink="/carrinho" class="btn btn-outline-secondary text-start">🛍️ Visualizar Carrinho Atual</a>
-            </div>
-          </div>
+      <!-- Seção Resumo Geral -->
+      <div class="card shadow-sm p-4">
+        <h4>Status dos Módulos da Aplicação</h4>
+        <div class="table-responsive mt-3">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Módulo</th>
+                <th>Status da Integração</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Categorias (RF12)</strong></td>
+                <td><span class="badge bg-success">Operacional</span></td>
+                <td><a routerLink="/admin/categorias" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
+              </tr>
+              <tr>
+                <td><strong>Produtos & Serviços (RF10/RF11)</strong></td>
+                <td><span class="badge bg-success">Operacional</span></td>
+                <td><a routerLink="/admin/produtos" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
+              </tr>
+              <tr>
+                <td><strong>Loja Virtual (RF01/RF02/RF03)</strong></td>
+                <td><span class="badge bg-success">Operacional</span></td>
+                <td><a routerLink="/loja" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
+              </tr>
+              <tr>
+                <td><strong>Carrinho & Checkout (RF05-RF08)</strong></td>
+                <td><span class="badge bg-warning text-dark">Em validação</span></td>
+                <td><a routerLink="/carrinho" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   `
 })
-export class DashboardComponent implements OnInit {
-  private pessoaService = inject(PessoaService);
+export class Dashboard implements OnInit {
   private produtoService = inject(ProdutoService);
-  private atendimentoService = inject(AtendimentoService);
-  private estoqueService = inject(EstoqueService);
+  private categoriaService = inject(CategoriaService);
 
-  totalClientes = signal<number>(0);
   totalProdutos = signal<number>(0);
-  totalPedidos = signal<number>(0);
-  totalEstoque = signal<number>(0);
+  totalServicos = signal<number>(0);
+  totalCategorias = signal<number>(0);
+  totalGeral = signal<number>(0);
 
   ngOnInit(): void {
-    this.carregarResumos();
+    this.carregarMetricas();
   }
 
-  carregarResumos(): void {
-    this.pessoaService.getAll().subscribe({
-      next: (res) => this.totalClientes.set(res.length),
-      error: () => {}
+  carregarMetricas(): void {
+    this.categoriaService.getCategorias().subscribe({
+      next: (res) => this.totalCategorias.set(res?.length || 0),
+      error: () => this.totalCategorias.set(0)
     });
 
     this.produtoService.getProdutos().subscribe({
-      next: (res) => this.totalProdutos.set(res.length),
-      error: () => {}
-    });
-
-    this.atendimentoService.getAtendimentos().subscribe({
-      next: (res) => this.totalPedidos.set(res.length),
-      error: () => {}
-    });
-
-    this.estoqueService.getEstoque().subscribe({
       next: (res) => {
-        const total = res.reduce((acc, i) => acc + (i.quantidadeEstoque || 0), 0);
-        this.totalEstoque.set(total);
+        if (res && Array.isArray(res)) {
+          this.totalGeral.set(res.length);
+          const prods = res.filter(p => p.iditemNavigation?.tipoItem === 'P').length;
+          const servs = res.filter(p => p.iditemNavigation?.tipoItem === 'S').length;
+          this.totalProdutos.set(prods);
+          this.totalServicos.set(servs);
+        }
       },
-      error: () => {}
+      error: () => {
+        this.totalProdutos.set(0);
+        this.totalServicos.set(0);
+        this.totalGeral.set(0);
+      }
     });
   }
 }
-
-export { DashboardComponent as Dashboard };
