@@ -26,8 +26,8 @@ import { ProdutoBackendResponse } from '../../../models/produto.model';
               <label class="form-label">Produto (*)</label>
               <select class="form-select" [(ngModel)]="novaEntrada.iditem" name="iditem" required>
                 <option [value]="0">-- Selecione o Produto --</option>
-                <option *ngFor="let p of listaProdutos()" [value]="p.iditem">
-                  #{{ p.iditem }} - {{ p.iditemNavigation?.item1 }}
+                <option *ngFor="let p of listaProdutos()" [value]="p.iditem || (p as any).idItem">
+                  #{{ getItemId(p) }} - {{ obterNomeProduto(p) }}
                 </option>
               </select>
             </div>
@@ -82,19 +82,19 @@ import { ProdutoBackendResponse } from '../../../models/produto.model';
           </thead>
           <tbody>
             <tr *ngFor="let item of listaEstoque()">
-              <td>#{{ item.iditem }}</td>
-              <td><strong>{{ item.iditemNavigation?.item1 || 'Item #' + item.iditem }}</strong></td>
-              <td>{{ item.iditemNavigation?.descricaoItem || '-' }}</td>
-              <td>R$ {{ (item.precoVenda || 0) | number:'1.2-2' }}</td>
+              <td>#{{ getItemId(item) }}</td>
+              <td><strong>{{ obterNomeProduto(item) }}</strong></td>
+              <td>{{ obterDescricao(item) }}</td>
+              <td>R$ {{ (item.precoVenda || (item as any).preco || 0) | number:'1.2-2' }}</td>
               <td>{{ item.unidade || 'UN' }}</td>
               <td>
-                <span class="badge" [ngClass]="item.quantidadeEstoque > 5 ? 'bg-success' : 'bg-danger'">
-                  {{ item.quantidadeEstoque }} unidade(s)
+                <span class="badge" [ngClass]="(item.quantidadeEstoque || 0) > 5 ? 'bg-success' : 'bg-danger'">
+                  {{ item.quantidadeEstoque || 0 }} unidade(s)
                 </span>
               </td>
               <td>
                 <span class="badge bg-secondary">
-                  {{ item.iditemNavigation?.ativoItem === 'N' ? 'Inativo' : 'Ativo' }}
+                  {{ obterSituacao(item) }}
                 </span>
               </td>
             </tr>
@@ -132,16 +132,58 @@ export class EstoqueComponent implements OnInit {
 
   carregarEstoque(): void {
     this.estoqueService.getEstoque().subscribe({
-      next: (res) => this.listaEstoque.set(res),
+      next: (res) => this.listaEstoque.set(res || []),
       error: (err) => console.error('Erro ao carregar estoque:', err)
     });
   }
 
   carregarProdutos(): void {
     this.produtoService.getProdutos().subscribe({
-      next: (res) => this.listaProdutos.set(res.filter(p => p.iditemNavigation?.tipoItem === 'P')),
+      next: (res) => this.listaProdutos.set((res || []).filter(p => p.iditemNavigation?.tipoItem === 'P')),
       error: (err) => console.error('Erro ao carregar produtos:', err)
     });
+  }
+
+  getItemId(item: any): number | string {
+    return item.iditem ?? item.idItem ?? item.iditemNavigation?.iditem ?? item.idItemNavigation?.iditem ?? '-';
+  }
+
+  obterNomeProduto(item: any): string {
+    const nav = item.iditemNavigation || item.idItemNavigation;
+    if (nav?.item1) return nav.item1;
+    if (item.item1) return item.item1;
+    if (item.item) return item.item;
+    if (item.nomeItem) return item.nomeItem;
+
+    const id = Number(this.getItemId(item));
+    if (id) {
+      const prod = this.listaProdutos().find(p => p.iditem === id || (p as any).idItem === id);
+      if (prod?.iditemNavigation?.item1) {
+        return prod.iditemNavigation.item1;
+      }
+    }
+    return id ? `Item #${id}` : '-';
+  }
+
+  obterDescricao(item: any): string {
+    const nav = item.iditemNavigation || item.idItemNavigation;
+    if (nav?.descricaoItem) return nav.descricaoItem;
+    if (item.descricaoItem) return item.descricaoItem;
+
+    const id = Number(this.getItemId(item));
+    if (id) {
+      const prod = this.listaProdutos().find(p => p.iditem === id || (p as any).idItem === id);
+      if (prod?.iditemNavigation?.descricaoItem) {
+        return prod.iditemNavigation.descricaoItem;
+      }
+    }
+    return '-';
+  }
+
+  obterSituacao(item: any): string {
+    const nav = item.iditemNavigation || item.idItemNavigation;
+    const ativo = nav?.ativoProdutoServico || nav?.ativoItem || item.ativoProdutoServico || item.ativoItem;
+    return ativo === 'N' ? 'Inativo' : 'Ativo';
   }
 
   filtrarPorId(): void {
