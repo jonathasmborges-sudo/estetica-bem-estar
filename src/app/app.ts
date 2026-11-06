@@ -11,11 +11,14 @@ import { RouterOutlet, RouterLink } from '@angular/router';
         <a class="navbar-brand fw-bold" routerLink="/loja">Estética & Bem-Estar</a>
         <div class="navbar-nav ms-auto">
           <a class="nav-link" routerLink="/loja">Loja</a>
+          <a class="nav-link" routerLink="/loja/meus-pedidos">Meus Pedidos</a>
           <a class="nav-link" routerLink="/carrinho">Carrinho</a>
+          <a class="nav-link" routerLink="/admin/dashboard">Dashboard</a>
           <a class="nav-link" routerLink="/admin/clientes">Clientes</a>
           <a class="nav-link" routerLink="/admin/produtos">Produtos</a>
           <a class="nav-link" routerLink="/admin/categorias">Categorias</a>
-          <a class="nav-link" routerLink="/admin/atendimentos">Pedidos</a>
+          <a class="nav-link" routerLink="/admin/atendimentos">Pedidos Admin</a>
+          <a class="nav-link" routerLink="/admin/estoque">Estoque</a>
         </div>
       </div>
     </nav>

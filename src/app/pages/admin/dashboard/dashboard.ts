@@ -10,7 +10,7 @@ import { CategoriaService } from '../../../services/categoria.service';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="container my-4">
-      <h2 class="mb-4">Painel Administrativo (Dashboard)</h2>
+      <h2 class="mb-4">Painel Administrativo</h2>
 
       <div class="row g-4 mb-4">
         <!-- Card Produtos -->

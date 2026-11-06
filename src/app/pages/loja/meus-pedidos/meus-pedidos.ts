@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ClienteService } from '../../../services/cliente.service';
 
 @Component({
   selector: 'app-meus-pedidos',
@@ -94,7 +93,6 @@ import { ClienteService } from '../../../services/cliente.service';
 })
 export class MeusPedidosComponent implements OnInit {
   private http = inject(HttpClient);
-  private clienteService = inject(ClienteService, { optional: true });
 
   listaClientes = signal<any[]>([]);
   todosPedidos = signal<any[]>([]);
@@ -109,34 +107,12 @@ export class MeusPedidosComponent implements OnInit {
   }
 
   carregarClientes(): void {
-    if (this.clienteService) {
-      this.clienteService.getClientes().subscribe({
-        next: (res) => {
-          if (res && res.length > 0) {
-            this.listaClientes.set(res);
-          } else {
-            this.buscarClientesViaHttpDirect();
-          }
-        },
-        error: () => this.buscarClientesViaHttpDirect()
-      });
-    } else {
-      this.buscarClientesViaHttpDirect();
-    }
-  }
-
-  private buscarClientesViaHttpDirect(): void {
     this.http.get<any[]>('/api/PessoaEndereco').subscribe({
-      next: (res) => this.listaClientes.set(res || []),
+      next: (res: any[]) => this.listaClientes.set(res || []),
       error: () => {
         this.http.get<any[]>('/api/Pessoa').subscribe({
-          next: (res) => this.listaClientes.set(res || []),
-          error: () => {
-            this.http.get<any[]>('/api/Cliente').subscribe({
-              next: (res) => this.listaClientes.set(res || []),
-              error: (err) => console.error('Erro ao carregar lista de clientes:', err)
-            });
-          }
+          next: (res: any[]) => this.listaClientes.set(res || []),
+          error: (err: any) => console.error('Erro ao carregar lista de clientes:', err)
         });
       }
     });
@@ -144,8 +120,8 @@ export class MeusPedidosComponent implements OnInit {
 
   carregarTodosPedidos(): void {
     this.http.get<any[]>('/api/Atendimento').subscribe({
-      next: (res) => this.todosPedidos.set(res || []),
-      error: (err) => console.error('Erro ao carregar atendimentos/pedidos:', err)
+      next: (res: any[]) => this.todosPedidos.set(res || []),
+      error: (err: any) => console.error('Erro ao carregar atendimentos/pedidos:', err)
     });
   }
 
@@ -160,11 +136,11 @@ export class MeusPedidosComponent implements OnInit {
     this.buscaRealizada.set(true);
 
     this.http.get<any[]>('/api/Atendimento').subscribe({
-      next: (res) => {
+      next: (res: any[]) => {
         const pedidos = res || [];
         this.todosPedidos.set(pedidos);
-        
-        const filtrados = pedidos.filter(p => {
+
+        const filtrados = pedidos.filter((p: any) => {
           const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? 0);
           return idPedCliente === id;
         });
@@ -172,9 +148,9 @@ export class MeusPedidosComponent implements OnInit {
         this.pedidosFiltrados.set(filtrados);
         this.carregando.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erro ao buscar pedidos:', err);
-        const filtrados = this.todosPedidos().filter(p => {
+        const filtrados = this.todosPedidos().filter((p: any) => {
           const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? 0);
           return idPedCliente === id;
         });
