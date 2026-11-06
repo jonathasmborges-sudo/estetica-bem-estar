@@ -84,22 +84,22 @@ import { CategoriaService } from '../../../services/categoria.service';
             </thead>
             <tbody>
               <tr>
-                <td><strong>Categorias (RF12)</strong></td>
+                <td><strong>Categorias</strong></td>
                 <td><span class="badge bg-success">Operacional</span></td>
                 <td><a routerLink="/admin/categorias" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
               </tr>
               <tr>
-                <td><strong>Produtos & Serviços (RF10/RF11)</strong></td>
+                <td><strong>Produtos & Serviços</strong></td>
                 <td><span class="badge bg-success">Operacional</span></td>
                 <td><a routerLink="/admin/produtos" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
               </tr>
               <tr>
-                <td><strong>Loja Virtual (RF01/RF02/RF03)</strong></td>
+                <td><strong>Loja Virtual</strong></td>
                 <td><span class="badge bg-success">Operacional</span></td>
                 <td><a routerLink="/loja" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
               </tr>
               <tr>
-                <td><strong>Carrinho & Checkout (RF05-RF08)</strong></td>
+                <td><strong>Carrinho & Checkout</strong></td>
                 <td><span class="badge bg-warning text-dark">Em validação</span></td>
                 <td><a routerLink="/carrinho" class="btn btn-sm btn-outline-secondary">Acessar</a></td>
               </tr>
