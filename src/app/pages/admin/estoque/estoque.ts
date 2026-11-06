@@ -26,7 +26,7 @@ import { ProdutoBackendResponse } from '../../../models/produto.model';
               <label class="form-label">Produto (*)</label>
               <select class="form-select" [(ngModel)]="novaEntrada.iditem" name="iditem" required>
                 <option [value]="0">-- Selecione o Produto --</option>
-                <option *ngFor="let p of listaProdutos()" [value]="p.iditem || (p as any).idItem">
+                <option *ngFor="let p of listaProdutos()" [value]="getItemId(p)">
                   #{{ getItemId(p) }} - {{ obterNomeProduto(p) }}
                 </option>
               </select>
@@ -85,7 +85,7 @@ import { ProdutoBackendResponse } from '../../../models/produto.model';
               <td>#{{ getItemId(item) }}</td>
               <td><strong>{{ obterNomeProduto(item) }}</strong></td>
               <td>{{ obterDescricao(item) }}</td>
-              <td>R$ {{ (item.precoVenda || (item as any).preco || 0) | number:'1.2-2' }}</td>
+              <td>R$ {{ obterPreco(item) | number:'1.2-2' }}</td>
               <td>{{ item.unidade || 'UN' }}</td>
               <td>
                 <span class="badge" [ngClass]="(item.quantidadeEstoque || 0) > 5 ? 'bg-success' : 'bg-danger'">
@@ -113,6 +113,7 @@ export class EstoqueComponent implements OnInit {
 
   listaEstoque = signal<EstoqueDTO[]>([]);
   listaProdutos = signal<ProdutoBackendResponse[]>([]);
+  todosItensCatalogados = signal<ProdutoBackendResponse[]>([]);
   exibirModalEntrada = signal<boolean>(false);
   salvando = signal<boolean>(false);
   filtroIdItem: number | null = null;
@@ -126,38 +127,59 @@ export class EstoqueComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.carregarEstoque();
-    this.carregarProdutos();
+    this.carregarProdutosEEstoque();
+  }
+
+  carregarProdutosEEstoque(): void {
+    this.produtoService.getProdutos().subscribe({
+      next: (res) => {
+        const todos = res || [];
+        this.todosItensCatalogados.set(todos);
+        this.listaProdutos.set(todos.filter(p => p.iditemNavigation?.tipoItem === 'P'));
+        this.carregarEstoque();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar produtos:', err);
+        this.carregarEstoque();
+      }
+    });
   }
 
   carregarEstoque(): void {
     this.estoqueService.getEstoque().subscribe({
-      next: (res) => this.listaEstoque.set(res || []),
+      next: (res) => {
+        const estoques = res || [];
+        // Filtra para manter na tabela apenas itens do tipo 'P' (Produtos)
+        const estoqueApenasProdutos = estoques.filter(item => {
+          const id = Number(this.getItemId(item));
+          const prod = this.todosItensCatalogados().find(p => (p.iditem || (p as any).idItem) === id);
+          if (prod && prod.iditemNavigation?.tipoItem) {
+            return prod.iditemNavigation.tipoItem === 'P';
+          }
+          const nav = item.iditemNavigation || (item as any).idItemNavigation;
+          return nav?.tipoItem ? nav.tipoItem === 'P' : true;
+        });
+        this.listaEstoque.set(estoqueApenasProdutos);
+      },
       error: (err) => console.error('Erro ao carregar estoque:', err)
     });
   }
 
-  carregarProdutos(): void {
-    this.produtoService.getProdutos().subscribe({
-      next: (res) => this.listaProdutos.set((res || []).filter(p => p.iditemNavigation?.tipoItem === 'P')),
-      error: (err) => console.error('Erro ao carregar produtos:', err)
-    });
-  }
-
   getItemId(item: any): number | string {
+    if (!item) return '-';
     return item.iditem ?? item.idItem ?? item.iditemNavigation?.iditem ?? item.idItemNavigation?.iditem ?? '-';
   }
 
   obterNomeProduto(item: any): string {
+    if (!item) return '-';
     const nav = item.iditemNavigation || item.idItemNavigation;
     if (nav?.item1) return nav.item1;
     if (item.item1) return item.item1;
     if (item.item) return item.item;
-    if (item.nomeItem) return item.nomeItem;
 
     const id = Number(this.getItemId(item));
     if (id) {
-      const prod = this.listaProdutos().find(p => p.iditem === id || (p as any).idItem === id);
+      const prod = this.todosItensCatalogados().find(p => (p.iditem || (p as any).idItem) === id);
       if (prod?.iditemNavigation?.item1) {
         return prod.iditemNavigation.item1;
       }
@@ -166,13 +188,14 @@ export class EstoqueComponent implements OnInit {
   }
 
   obterDescricao(item: any): string {
+    if (!item) return '-';
     const nav = item.iditemNavigation || item.idItemNavigation;
     if (nav?.descricaoItem) return nav.descricaoItem;
     if (item.descricaoItem) return item.descricaoItem;
 
     const id = Number(this.getItemId(item));
     if (id) {
-      const prod = this.listaProdutos().find(p => p.iditem === id || (p as any).idItem === id);
+      const prod = this.todosItensCatalogados().find(p => (p.iditem || (p as any).idItem) === id);
       if (prod?.iditemNavigation?.descricaoItem) {
         return prod.iditemNavigation.descricaoItem;
       }
@@ -180,7 +203,13 @@ export class EstoqueComponent implements OnInit {
     return '-';
   }
 
+  obterPreco(item: any): number {
+    if (!item) return 0;
+    return Number(item.precoVenda ?? item.preco ?? item.iditemNavigation?.preco ?? 0);
+  }
+
   obterSituacao(item: any): string {
+    if (!item) return 'Ativo';
     const nav = item.iditemNavigation || item.idItemNavigation;
     const ativo = nav?.ativoProdutoServico || nav?.ativoItem || item.ativoProdutoServico || item.ativoItem;
     return ativo === 'N' ? 'Inativo' : 'Ativo';
@@ -192,7 +221,16 @@ export class EstoqueComponent implements OnInit {
       return;
     }
     this.estoqueService.getEstoquePorId(Number(this.filtroIdItem)).subscribe({
-      next: (res) => this.listaEstoque.set(res ? [res] : []),
+      next: (res) => {
+        if (!res) {
+          this.listaEstoque.set([]);
+          return;
+        }
+        const id = Number(this.getItemId(res));
+        const prod = this.todosItensCatalogados().find(p => (p.iditem || (p as any).idItem) === id);
+        const ehProduto = prod ? prod.iditemNavigation?.tipoItem === 'P' : true;
+        this.listaEstoque.set(ehProduto ? [res] : []);
+      },
       error: () => alert('Item não localizado no estoque (404 Not Found).')
     });
   }
