@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AtendimentoService } from '../../../services/atendimento.service';
 
 @Component({
   selector: 'app-meus-pedidos',
@@ -93,6 +94,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class MeusPedidosComponent implements OnInit {
   private http = inject(HttpClient);
+  private atendimentoService = inject(AtendimentoService, { optional: true });
 
   listaClientes = signal<any[]>([]);
   todosPedidos = signal<any[]>([]);
@@ -102,27 +104,109 @@ export class MeusPedidosComponent implements OnInit {
   buscaRealizada = signal<boolean>(false);
 
   ngOnInit(): void {
-    this.carregarClientes();
-    this.carregarTodosPedidos();
+    this.carregarDados();
   }
 
-  carregarClientes(): void {
-    this.http.get<any[]>('/api/PessoaEndereco').subscribe({
-      next: (res: any[]) => this.listaClientes.set(res || []),
+  carregarDados(): void {
+    this.carregando.set(true);
+
+    const processarPedidos = (pedidos: any[]) => {
+      const lista = pedidos || [];
+      this.todosPedidos.set(lista);
+      this.extrairClientesDosPedidos(lista);
+      this.carregarClientesViaApiExplicita();
+      this.carregando.set(false);
+    };
+
+    if (this.atendimentoService) {
+      const serviceAny = this.atendimentoService as any;
+      const getObs = serviceAny.getAtendimentos ? serviceAny.getAtendimentos() :
+                     serviceAny.getPedidos ? serviceAny.getPedidos() : null;
+
+      if (getObs && typeof getObs.subscribe === 'function') {
+        getObs.subscribe({
+          next: (res: any[]) => processarPedidos(res),
+          error: (err: any) => {
+            console.error('Erro no AtendimentoService:', err);
+            this.tentarHttpDireto(processarPedidos);
+          }
+        });
+        return;
+      }
+    }
+
+    this.tentarHttpDireto(processarPedidos);
+  }
+
+  private tentarHttpDireto(callback: (pedidos: any[]) => void): void {
+    const baseUrl = this.obterBaseApiUrl();
+    this.http.get<any[]>(`${baseUrl}/api/Atendimento`).subscribe({
+      next: (res: any[]) => callback(res),
       error: () => {
-        this.http.get<any[]>('/api/Pessoa').subscribe({
-          next: (res: any[]) => this.listaClientes.set(res || []),
-          error: (err: any) => console.error('Erro ao carregar lista de clientes:', err)
+        this.http.get<any[]>('/api/Atendimento').subscribe({
+          next: (res: any[]) => callback(res),
+          error: (err: any) => {
+            console.error('Erro ao buscar atendimentos via HTTP:', err);
+            this.carregando.set(false);
+          }
         });
       }
     });
   }
 
-  carregarTodosPedidos(): void {
-    this.http.get<any[]>('/api/Atendimento').subscribe({
-      next: (res: any[]) => this.todosPedidos.set(res || []),
-      error: (err: any) => console.error('Erro ao carregar atendimentos/pedidos:', err)
+  private carregarClientesViaApiExplicita(): void {
+    const baseUrl = this.obterBaseApiUrl();
+    const endpointPessoas = `${baseUrl}/api/PessoaEndereco`;
+
+    this.http.get<any[]>(endpointPessoas).subscribe({
+      next: (res: any[]) => {
+        if (res && res.length > 0) {
+          const clientesAtuais = [...this.listaClientes()];
+          res.forEach(p => {
+            const id = this.getIdCliente(p);
+            if (id && !clientesAtuais.some(c => this.getIdCliente(c) === id)) {
+              clientesAtuais.push(p);
+            }
+          });
+          this.listaClientes.set(clientesAtuais);
+        }
+      },
+      error: () => {
+        // Fallback silencioso mantendo os clientes extraídos dos atendimentos
+      }
     });
+  }
+
+  private obterBaseApiUrl(): string {
+    if (this.atendimentoService) {
+      const url = (this.atendimentoService as any).apiUrl || (this.atendimentoService as any).url || '';
+      if (url && url.includes('http')) {
+        const match = url.match(/^(https?:\/\/[^\/]+)/);
+        if (match) return match[1];
+      }
+    }
+    return '';
+  }
+
+  private extrairClientesDosPedidos(pedidos: any[]): void {
+    const clientesMap = new Map<number, any>();
+
+    pedidos.forEach(p => {
+      const id = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? p.idpessoaNavigation?.idpessoa ?? 0);
+      const nome = p.nomePessoa ?? p.nomeCliente ?? p.pessoa1 ?? p.pessoa?.nomePessoa ?? p.idpessoaNavigation?.nomePessoa ?? p.cliente ?? null;
+
+      if (id > 0 && !clientesMap.has(id)) {
+        clientesMap.set(id, {
+          idpessoa: id,
+          nomePessoa: nome || `Cliente #${id}`
+        });
+      }
+    });
+
+    const clientesExtraidos = Array.from(clientesMap.values());
+    if (clientesExtraidos.length > 0) {
+      this.listaClientes.set(clientesExtraidos);
+    }
   }
 
   filtrarPedidos(): void {
@@ -132,32 +216,14 @@ export class MeusPedidosComponent implements OnInit {
       return;
     }
 
-    this.carregando.set(true);
     this.buscaRealizada.set(true);
 
-    this.http.get<any[]>('/api/Atendimento').subscribe({
-      next: (res: any[]) => {
-        const pedidos = res || [];
-        this.todosPedidos.set(pedidos);
-
-        const filtrados = pedidos.filter((p: any) => {
-          const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? 0);
-          return idPedCliente === id;
-        });
-
-        this.pedidosFiltrados.set(filtrados);
-        this.carregando.set(false);
-      },
-      error: (err: any) => {
-        console.error('Erro ao buscar pedidos:', err);
-        const filtrados = this.todosPedidos().filter((p: any) => {
-          const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? 0);
-          return idPedCliente === id;
-        });
-        this.pedidosFiltrados.set(filtrados);
-        this.carregando.set(false);
-      }
+    const filtrados = this.todosPedidos().filter((p: any) => {
+      const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? p.idpessoaNavigation?.idpessoa ?? 0);
+      return idPedCliente === id;
     });
+
+    this.pedidosFiltrados.set(filtrados);
   }
 
   getIdCliente(c: any): number {
