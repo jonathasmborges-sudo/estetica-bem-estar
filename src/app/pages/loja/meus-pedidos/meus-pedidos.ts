@@ -237,15 +237,17 @@ export class MeusPedidosComponent implements OnInit {
     const id = Number(this.clienteSelecionadoId);
     this.buscaRealizada.set(true);
 
-    if (!id || id <= 0) {
-      this.pedidosFiltrados.set(this.todosPedidos());
-      return;
+    let filtrados = this.todosPedidos();
+
+    if (id > 0) {
+      filtrados = filtrados.filter((p: any) => {
+        const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? p.idpessoaNavigation?.idpessoa ?? 0);
+        return idPedCliente === id;
+      });
     }
 
-    const filtrados = this.todosPedidos().filter((p: any) => {
-      const idPedCliente = Number(p.idpessoa ?? p.idPessoa ?? p.idcliente ?? p.idCliente ?? p.pessoa?.idpessoa ?? p.idpessoaNavigation?.idpessoa ?? 0);
-      return idPedCliente === id;
-    });
+    // Ordenação decrescente: do pedido com maior ID (mais recente) para o menor
+    filtrados = [...filtrados].sort((a, b) => Number(this.getIdPedido(b)) - Number(this.getIdPedido(a)));
 
     this.pedidosFiltrados.set(filtrados);
   }
@@ -291,15 +293,21 @@ export class MeusPedidosComponent implements OnInit {
   }
 
   getSituacaoPedido(p: any): string {
-    if (!p) return 'Em Aberto';
-    return p.situacaoAtendimento ?? p.situacao ?? p.status ?? 'Concluído';
+    if (!p) return 'Aberto';
+    const status = p.situacaoAtendimento ?? p.situacao ?? p.statusAtendimento ?? p.status ?? p.situacaoAtendimentoNavigation?.descricao;
+    if (status && String(status).trim().length > 0) {
+      return String(status);
+    }
+    return 'Aberto';
   }
 
   getBadgeClass(status: string): string {
     const s = (status || '').toLowerCase();
     if (s.includes('conclu') || s.includes('pago') || s.includes('finaliz')) return 'bg-success';
+    if (s.includes('process') || s.includes('andamento')) return 'bg-warning text-dark';
+    if (s.includes('aberto') || s.includes('pendent')) return 'bg-info text-dark';
     if (s.includes('cancel')) return 'bg-danger';
-    return 'bg-warning text-dark';
+    return 'bg-secondary';
   }
 
   getItensPedido(p: any): any[] {
