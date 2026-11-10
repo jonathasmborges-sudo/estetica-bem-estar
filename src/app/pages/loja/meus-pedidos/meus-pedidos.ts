@@ -246,7 +246,6 @@ export class MeusPedidosComponent implements OnInit {
       });
     }
 
-    // Ordenação decrescente: do pedido com maior ID (mais recente) para o menor
     filtrados = [...filtrados].sort((a, b) => Number(this.getIdPedido(b)) - Number(this.getIdPedido(a)));
 
     this.pedidosFiltrados.set(filtrados);
@@ -303,11 +302,11 @@ export class MeusPedidosComponent implements OnInit {
 
   getBadgeClass(status: string): string {
     const s = (status || '').toLowerCase();
-    if (s.includes('conclu') || s.includes('pago') || s.includes('finaliz')) return 'bg-success';
-    if (s.includes('process') || s.includes('andamento')) return 'bg-warning text-dark';
-    if (s.includes('aberto') || s.includes('pendent')) return 'bg-info text-dark';
-    if (s.includes('cancel')) return 'bg-danger';
-    return 'bg-secondary';
+    if (s.includes('conclu') || s.includes('pago') || s.includes('finaliz')) return 'bg-success text-white';
+    if (s.includes('process') || s.includes('andamento')) return 'bg-info text-white';
+    if (s.includes('aberto') || s.includes('pendent')) return 'bg-warning text-white';
+    if (s.includes('cancel')) return 'bg-danger text-white';
+    return 'bg-secondary text-white';
   }
 
   getItensPedido(p: any): any[] {

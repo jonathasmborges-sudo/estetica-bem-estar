@@ -42,12 +42,9 @@ import { AtendimentoDTO } from '../../../models/atendimento.model';
               <td>{{ a.nomePessoa }}</td>
               <td>{{ a.dataAtendimento }}</td>
               <td>
-                <span class="badge" [ngClass]="{
-                  'bg-warning text-dark': a.statusAtendimento === 'Aberto',
-                  'bg-info text-dark': a.statusAtendimento === 'Em processamento',
-                  'bg-success': a.statusAtendimento === 'Concluído',
-                  'bg-danger': a.statusAtendimento === 'Cancelado'
-                }">{{ a.statusAtendimento }}</span>
+                <span class="badge" [ngClass]="getBadgeClass(a.statusAtendimento)">
+                  {{ a.statusAtendimento }}
+                </span>
               </td>
               <td>
                 <select class="form-select form-select-sm" [ngModel]="a.statusAtendimento" (change)="alterarStatus(a, $event)">
@@ -110,5 +107,14 @@ export class AtendimentosComponent implements OnInit {
       },
       error: (err) => console.error('Erro ao atualizar status:', err)
     });
+  }
+
+  getBadgeClass(status: string): string {
+    const s = (status || '').toLowerCase();
+    if (s.includes('conclu') || s.includes('pago') || s.includes('finaliz')) return 'bg-success text-white';
+    if (s.includes('process') || s.includes('andamento')) return 'bg-info text-white';
+    if (s.includes('aberto') || s.includes('pendent')) return 'bg-warning text-white';
+    if (s.includes('cancel')) return 'bg-danger text-white';
+    return 'bg-secondary text-white';
   }
 }
